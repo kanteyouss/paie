@@ -5,7 +5,7 @@ import java.time.LocalDate;
 /**
  * DTO de réponse pour Absence.
  */
-public class AbsenceResponseDto {
+public class AbsenceResponseDto implements ResponseDto {
     private Long id;
     private LocalDate dateDebut;
     private LocalDate dateFin;

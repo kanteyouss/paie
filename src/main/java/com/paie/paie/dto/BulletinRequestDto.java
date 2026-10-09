@@ -6,7 +6,7 @@ import java.time.LocalDate;
 /**
  * DTO de requête pour Bulletin.
  */
-public class BulletinRequestDto {
+public class BulletinRequestDto implements RequestDto {
     private Long id;
     private String periodeMois;
     private LocalDate dateEmission;

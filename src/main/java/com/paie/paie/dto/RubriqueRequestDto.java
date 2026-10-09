@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 /**
  * DTO de requête pour Rubrique.
  */
-public class RubriqueRequestDto {
+public class RubriqueRequestDto implements RequestDto {
     private Long id;
     private String code;
     private String libelle;

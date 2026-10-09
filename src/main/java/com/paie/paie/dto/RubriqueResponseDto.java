@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 /**
  * DTO de réponse pour Rubrique.
  */
-public class RubriqueResponseDto {
+public class RubriqueResponseDto implements ResponseDto {
     private Long id;
     private String code;
     private String libelle;

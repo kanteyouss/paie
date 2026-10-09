@@ -1,22 +1,24 @@
 package com.paie.paie.service;
 
+import com.paie.paie.dto.RequestDto;
+import com.paie.paie.dto.ResponseDto;
 import com.paie.paie.dto.EmployeRequestDto;
 import com.paie.paie.dto.EmployeResponseDto;
 import com.paie.paie.entity.Employe;
 import com.paie.paie.repository.EmployeRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 
 /**
  * Service métier gérant les Employes.
  * Fournit les opérations CRUD et les conversions entité/DTO.
  */
 @Service
-public class EmployeService {
+public class EmployeService extends AbstractCrudService {
     private final EmployeRepository employeRepository;
 
     public EmployeService(EmployeRepository employeRepository) {
+        super(employeRepository);
         this.employeRepository = employeRepository;
     }
 
@@ -42,7 +44,9 @@ public class EmployeService {
      * @param employe L'entité Employe à convertir
      * @return L'objet EmployeResponseDto correspondant
      */
-    public EmployeResponseDto toDto(Employe employe) {
+    @Override
+    public ResponseDto toDto(Object entity) {
+        Employe employe = (Employe) entity;
         EmployeResponseDto dto = new EmployeResponseDto();
         dto.setId(employe.getId());
         dto.setNom(employe.getNom());
@@ -53,26 +57,7 @@ public class EmployeService {
         return dto;
     }
 
-    /**
-     * Retourne la liste complète des entités Employe.
-     *
-     * @return La liste des EmployeResponseDto
-     */
-    public List<EmployeResponseDto> getAllEmployes() {
-        return employeRepository.findAll().stream().map(this::toDto).toList();
-    }
 
-    /**
-     * Recherche l'entité Employe par son identifiant unique.
-     *
-     * @param id L'identifiant de l'entité Employe recherchée
-     * @return L'objet EmployeResponseDto correspondant
-     * @throws RuntimeException Si l'entité Employe n'existe pas
-     */
-    public EmployeResponseDto getEmployeById(Long id) {
-        Employe employe = employeRepository.findById(id).orElseThrow(() -> new RuntimeException("Employe non trouvé"));
-        return toDto(employe);
-    }
 
     /**
      * Crée une entité Employe à partir des données fournies.
@@ -80,7 +65,9 @@ public class EmployeService {
      * @param employeRequest Les données de la requête (EmployeRequestDto)
      * @return L'objet EmployeResponseDto correspondant
      */
-    public EmployeResponseDto createEmploye(EmployeRequestDto employeRequest) {
+    @Override
+    public ResponseDto create(RequestDto request) {
+        EmployeRequestDto employeRequest = (EmployeRequestDto) request;
         Employe employe = toEntity(employeRequest);
         return toDto(employeRepository.save(employe));
     }
@@ -93,7 +80,9 @@ public class EmployeService {
      * @return L'objet EmployeResponseDto correspondant
      * @throws RuntimeException Si l'entité Employe n'existe pas
      */
-    public EmployeResponseDto updateEmployeById(Long id, EmployeRequestDto employeRequest) {
+    @Override
+    public ResponseDto update(Long id, RequestDto request) {
+        EmployeRequestDto employeRequest = (EmployeRequestDto) request;
         Employe employe = employeRepository.findById(id).orElseThrow(() -> new RuntimeException("Employe non trouvé"));
         employe.setNom(employeRequest.getNom());
         employe.setPrenom(employeRequest.getPrenom());
@@ -103,16 +92,4 @@ public class EmployeService {
         return toDto(employeRepository.save(employe));
     }
 
-    /**
-     * Supprime l'entité Employe par son identifiant.
-     *
-     * @param id L'identifiant de l'entité Employe recherchée
-     * @return L'objet EmployeResponseDto correspondant
-     * @throws RuntimeException Si l'entité Employe n'existe pas
-     */
-    public EmployeResponseDto deleteEmployeById(Long id) {
-        Employe employe = employeRepository.findById(id).orElseThrow(() -> new RuntimeException("Employe non trouvé"));
-        employeRepository.deleteById(id);
-        return toDto(employe);
-    }
 }

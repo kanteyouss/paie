@@ -1,5 +1,7 @@
 package com.paie.paie.service;
 
+import com.paie.paie.dto.RequestDto;
+import com.paie.paie.dto.ResponseDto;
 import com.paie.paie.dto.RubriqueRequestDto;
 import com.paie.paie.dto.RubriqueResponseDto;
 import com.paie.paie.dto.BulletinResponseDto;
@@ -14,14 +16,13 @@ import com.paie.paie.service.BulletinService;
 import com.paie.paie.service.TypeRubriqueService;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 
 /**
  * Service métier gérant les Rubriques.
  * Fournit les opérations CRUD et les conversions entité/DTO.
  */
 @Service
-public class RubriqueService {
+public class RubriqueService extends AbstractCrudService {
     private final RubriqueRepository rubriqueRepository;
     private final BulletinRepository bulletinRepository;
     private final BulletinService bulletinService;
@@ -29,6 +30,7 @@ public class RubriqueService {
     private final TypeRubriqueService typeRubriqueService;
 
     public RubriqueService(RubriqueRepository rubriqueRepository, BulletinRepository bulletinRepository, BulletinService bulletinService, TypeRubriqueRepository typeRubriqueRepository, TypeRubriqueService typeRubriqueService) {
+        super(rubriqueRepository);
         this.rubriqueRepository = rubriqueRepository;
         this.bulletinRepository = bulletinRepository;
         this.bulletinService = bulletinService;
@@ -63,7 +65,9 @@ public class RubriqueService {
      * @param rubrique L'entité Rubrique à convertir
      * @return L'objet RubriqueResponseDto correspondant
      */
-    public RubriqueResponseDto toDto(Rubrique rubrique) {
+    @Override
+    public ResponseDto toDto(Object entity) {
+        Rubrique rubrique = (Rubrique) entity;
         RubriqueResponseDto dto = new RubriqueResponseDto();
         dto.setId(rubrique.getId());
         dto.setCode(rubrique.getCode());
@@ -73,7 +77,7 @@ public class RubriqueService {
         dto.setFormule(rubrique.getFormule());
         dto.setMontantCalcule(rubrique.getMontantCalcule());
         if (rubrique.getBulletin() != null) {
-            dto.setBulletin(bulletinService.toDto(rubrique.getBulletin()));
+            dto.setBulletin((BulletinResponseDto) bulletinService.toDto(rubrique.getBulletin()));
         }
         if (rubrique.getTypeRubrique() != null) {
             dto.setTypeRubrique(typeRubriqueService.toDto(rubrique.getTypeRubrique()));
@@ -81,26 +85,7 @@ public class RubriqueService {
         return dto;
     }
 
-    /**
-     * Retourne la liste complète des entités Rubrique.
-     *
-     * @return La liste des RubriqueResponseDto
-     */
-    public List<RubriqueResponseDto> getAllRubriques() {
-        return rubriqueRepository.findAll().stream().map(this::toDto).toList();
-    }
 
-    /**
-     * Recherche l'entité Rubrique par son identifiant unique.
-     *
-     * @param id L'identifiant de l'entité Rubrique recherchée
-     * @return L'objet RubriqueResponseDto correspondant
-     * @throws RuntimeException Si l'entité Rubrique n'existe pas
-     */
-    public RubriqueResponseDto getRubriqueById(Long id) {
-        Rubrique rubrique = rubriqueRepository.findById(id).orElseThrow(() -> new RuntimeException("Rubrique non trouvé"));
-        return toDto(rubrique);
-    }
 
     /**
      * Crée une entité Rubrique à partir des données fournies.
@@ -108,7 +93,9 @@ public class RubriqueService {
      * @param rubriqueRequest Les données de la requête (RubriqueRequestDto)
      * @return L'objet RubriqueResponseDto correspondant
      */
-    public RubriqueResponseDto createRubrique(RubriqueRequestDto rubriqueRequest) {
+    @Override
+    public ResponseDto create(RequestDto request) {
+        RubriqueRequestDto rubriqueRequest = (RubriqueRequestDto) request;
         Bulletin bulletin = bulletinRepository.findById(rubriqueRequest.getBulletinId()).orElseThrow(() -> new RuntimeException("Bulletin non trouvé"));
         TypeRubrique typeRubrique = typeRubriqueRepository.findById(rubriqueRequest.getTypeRubriqueId()).orElseThrow(() -> new RuntimeException("TypeRubrique non trouvé"));
         Rubrique rubrique = toEntity(rubriqueRequest, bulletin, typeRubrique);
@@ -123,7 +110,9 @@ public class RubriqueService {
      * @return L'objet RubriqueResponseDto correspondant
      * @throws RuntimeException Si l'entité Rubrique n'existe pas
      */
-    public RubriqueResponseDto updateRubriqueById(Long id, RubriqueRequestDto rubriqueRequest) {
+    @Override
+    public ResponseDto update(Long id, RequestDto request) {
+        RubriqueRequestDto rubriqueRequest = (RubriqueRequestDto) request;
         Bulletin bulletin = bulletinRepository.findById(rubriqueRequest.getBulletinId()).orElseThrow(() -> new RuntimeException("Bulletin non trouvé"));
         TypeRubrique typeRubrique = typeRubriqueRepository.findById(rubriqueRequest.getTypeRubriqueId()).orElseThrow(() -> new RuntimeException("TypeRubrique non trouvé"));
         Rubrique rubrique = rubriqueRepository.findById(id).orElseThrow(() -> new RuntimeException("Rubrique non trouvé"));
@@ -138,16 +127,4 @@ public class RubriqueService {
         return toDto(rubriqueRepository.save(rubrique));
     }
 
-    /**
-     * Supprime l'entité Rubrique par son identifiant.
-     *
-     * @param id L'identifiant de l'entité Rubrique recherchée
-     * @return L'objet RubriqueResponseDto correspondant
-     * @throws RuntimeException Si l'entité Rubrique n'existe pas
-     */
-    public RubriqueResponseDto deleteRubriqueById(Long id) {
-        Rubrique rubrique = rubriqueRepository.findById(id).orElseThrow(() -> new RuntimeException("Rubrique non trouvé"));
-        rubriqueRepository.deleteById(id);
-        return toDto(rubrique);
-    }
 }

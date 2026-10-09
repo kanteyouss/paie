@@ -34,7 +34,7 @@ public class RegularisationService {
         dto.setMotif(regularisation.getMotif());
         dto.setMontant(regularisation.getMontant());
         if (regularisation.getBulletin() != null) {
-            dto.setBulletin(bulletinService.toDto(regularisation.getBulletin()));
+            dto.setBulletin((BulletinResponseDto) bulletinService.toDto(regularisation.getBulletin()));
         }
         return dto;
     }

@@ -1,5 +1,7 @@
 package com.paie.paie.service;
 
+import com.paie.paie.dto.RequestDto;
+import com.paie.paie.dto.ResponseDto;
 import com.paie.paie.dto.AbsenceRequestDto;
 import com.paie.paie.dto.AbsenceResponseDto;
 import com.paie.paie.dto.ContratResponseDto;
@@ -14,14 +16,13 @@ import com.paie.paie.service.ContratService;
 import com.paie.paie.service.TypeAbsenceService;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 
 /**
  * Service métier gérant les Absences.
  * Fournit les opérations CRUD et les conversions entité/DTO.
  */
 @Service
-public class AbsenceService {
+public class AbsenceService extends AbstractCrudService {
     private final AbsenceRepository absenceRepository;
     private final ContratRepository contratRepository;
     private final ContratService contratService;
@@ -29,6 +30,7 @@ public class AbsenceService {
     private final TypeAbsenceService typeAbsenceService;
 
     public AbsenceService(AbsenceRepository absenceRepository, ContratRepository contratRepository, ContratService contratService, TypeAbsenceRepository typeAbsenceRepository, TypeAbsenceService typeAbsenceService) {
+        super(absenceRepository);
         this.absenceRepository = absenceRepository;
         this.contratRepository = contratRepository;
         this.contratService = contratService;
@@ -60,14 +62,16 @@ public class AbsenceService {
      * @param absence L'entité Absence à convertir
      * @return L'objet AbsenceResponseDto correspondant
      */
-    public AbsenceResponseDto toDto(Absence absence) {
+    @Override
+    public ResponseDto toDto(Object entity) {
+        Absence absence = (Absence) entity;
         AbsenceResponseDto dto = new AbsenceResponseDto();
         dto.setId(absence.getId());
         dto.setDateDebut(absence.getDateDebut());
         dto.setDateFin(absence.getDateFin());
         dto.setMotif(absence.getMotif());
         if (absence.getContrat() != null) {
-            dto.setContrat(contratService.toDto(absence.getContrat()));
+            dto.setContrat((ContratResponseDto) contratService.toDto(absence.getContrat()));
         }
         if (absence.getTypeAbsence() != null) {
             dto.setTypeAbsence(typeAbsenceService.toDto(absence.getTypeAbsence()));
@@ -75,26 +79,7 @@ public class AbsenceService {
         return dto;
     }
 
-    /**
-     * Retourne la liste complète des entités Absence.
-     *
-     * @return La liste des AbsenceResponseDto
-     */
-    public List<AbsenceResponseDto> getAllAbsences() {
-        return absenceRepository.findAll().stream().map(this::toDto).toList();
-    }
 
-    /**
-     * Recherche l'entité Absence par son identifiant unique.
-     *
-     * @param id L'identifiant de l'entité Absence recherchée
-     * @return L'objet AbsenceResponseDto correspondant
-     * @throws RuntimeException Si l'entité Absence n'existe pas
-     */
-    public AbsenceResponseDto getAbsenceById(Long id) {
-        Absence absence = absenceRepository.findById(id).orElseThrow(() -> new RuntimeException("Absence non trouvé"));
-        return toDto(absence);
-    }
 
     /**
      * Crée une entité Absence à partir des données fournies.
@@ -102,7 +87,9 @@ public class AbsenceService {
      * @param absenceRequest Les données de la requête (AbsenceRequestDto)
      * @return L'objet AbsenceResponseDto correspondant
      */
-    public AbsenceResponseDto createAbsence(AbsenceRequestDto absenceRequest) {
+    @Override
+    public ResponseDto create(RequestDto request) {
+        AbsenceRequestDto absenceRequest = (AbsenceRequestDto) request;
         Contrat contrat = contratRepository.findById(absenceRequest.getContratId()).orElseThrow(() -> new RuntimeException("Contrat non trouvé"));
         TypeAbsence typeAbsence = typeAbsenceRepository.findById(absenceRequest.getTypeAbsenceId()).orElseThrow(() -> new RuntimeException("TypeAbsence non trouvé"));
         Absence absence = toEntity(absenceRequest, contrat, typeAbsence);
@@ -117,7 +104,9 @@ public class AbsenceService {
      * @return L'objet AbsenceResponseDto correspondant
      * @throws RuntimeException Si l'entité Absence n'existe pas
      */
-    public AbsenceResponseDto updateAbsenceById(Long id, AbsenceRequestDto absenceRequest) {
+    @Override
+    public ResponseDto update(Long id, RequestDto request) {
+        AbsenceRequestDto absenceRequest = (AbsenceRequestDto) request;
         Contrat contrat = contratRepository.findById(absenceRequest.getContratId()).orElseThrow(() -> new RuntimeException("Contrat non trouvé"));
         TypeAbsence typeAbsence = typeAbsenceRepository.findById(absenceRequest.getTypeAbsenceId()).orElseThrow(() -> new RuntimeException("TypeAbsence non trouvé"));
         Absence absence = absenceRepository.findById(id).orElseThrow(() -> new RuntimeException("Absence non trouvé"));
@@ -129,16 +118,4 @@ public class AbsenceService {
         return toDto(absenceRepository.save(absence));
     }
 
-    /**
-     * Supprime l'entité Absence par son identifiant.
-     *
-     * @param id L'identifiant de l'entité Absence recherchée
-     * @return L'objet AbsenceResponseDto correspondant
-     * @throws RuntimeException Si l'entité Absence n'existe pas
-     */
-    public AbsenceResponseDto deleteAbsenceById(Long id) {
-        Absence absence = absenceRepository.findById(id).orElseThrow(() -> new RuntimeException("Absence non trouvé"));
-        absenceRepository.deleteById(id);
-        return toDto(absence);
-    }
 }

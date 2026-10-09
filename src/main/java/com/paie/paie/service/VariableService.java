@@ -39,7 +39,7 @@ public class VariableService {
         dto.setDateSaisie(variable.getDateSaisie());
         dto.setValeur(variable.getValeur());
         if (variable.getContrat() != null) {
-            dto.setContrat(contratService.toDto(variable.getContrat()));
+            dto.setContrat((ContratResponseDto) contratService.toDto(variable.getContrat()));
         }
         if (variable.getTypeVariable() != null) {
             dto.setTypeVariable(typeVariableService.toDto(variable.getTypeVariable()));

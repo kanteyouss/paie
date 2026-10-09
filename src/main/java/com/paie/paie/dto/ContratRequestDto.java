@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 /**
  * DTO de requête pour Contrat.
  */
-public class ContratRequestDto {
+public class ContratRequestDto implements RequestDto {
     private Long id;
     private LocalDate dateDebut;
     private LocalDate dateFin;

@@ -1,5 +1,7 @@
 package com.paie.paie.service;
 
+import com.paie.paie.dto.RequestDto;
+import com.paie.paie.dto.ResponseDto;
 import com.paie.paie.dto.ContratRequestDto;
 import com.paie.paie.dto.ContratResponseDto;
 import com.paie.paie.dto.EmployeResponseDto;
@@ -14,14 +16,13 @@ import com.paie.paie.service.EmployeService;
 import com.paie.paie.service.StatutContratService;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 
 /**
  * Service métier gérant les Contrats.
  * Fournit les opérations CRUD et les conversions entité/DTO.
  */
 @Service
-public class ContratService {
+public class ContratService extends AbstractCrudService {
     private final ContratRepository contratRepository;
     private final EmployeRepository employeRepository;
     private final EmployeService employeService;
@@ -29,6 +30,7 @@ public class ContratService {
     private final StatutContratService statutContratService;
 
     public ContratService(ContratRepository contratRepository, EmployeRepository employeRepository, EmployeService employeService, StatutContratRepository statutContratRepository, StatutContratService statutContratService) {
+        super(contratRepository);
         this.contratRepository = contratRepository;
         this.employeRepository = employeRepository;
         this.employeService = employeService;
@@ -64,7 +66,9 @@ public class ContratService {
      * @param contrat L'entité Contrat à convertir
      * @return L'objet ContratResponseDto correspondant
      */
-    public ContratResponseDto toDto(Contrat contrat) {
+    @Override
+    public ResponseDto toDto(Object entity) {
+        Contrat contrat = (Contrat) entity;
         ContratResponseDto dto = new ContratResponseDto();
         dto.setId(contrat.getId());
         dto.setDateDebut(contrat.getDateDebut());
@@ -75,7 +79,7 @@ public class ContratService {
         dto.setDateCreation(contrat.getDateCreation());
         dto.setType(contrat.getType());
         if (contrat.getEmploye() != null) {
-            dto.setEmploye(employeService.toDto(contrat.getEmploye()));
+            dto.setEmploye((EmployeResponseDto) employeService.toDto(contrat.getEmploye()));
         }
         if (contrat.getStatutContrat() != null) {
             dto.setStatutContrat(statutContratService.toDto(contrat.getStatutContrat()));
@@ -83,26 +87,7 @@ public class ContratService {
         return dto;
     }
 
-    /**
-     * Retourne la liste complète des entités Contrat.
-     *
-     * @return La liste des ContratResponseDto
-     */
-    public List<ContratResponseDto> getAllContrats() {
-        return contratRepository.findAll().stream().map(this::toDto).toList();
-    }
 
-    /**
-     * Recherche l'entité Contrat par son identifiant unique.
-     *
-     * @param id L'identifiant de l'entité Contrat recherchée
-     * @return L'objet ContratResponseDto correspondant
-     * @throws RuntimeException Si l'entité Contrat n'existe pas
-     */
-    public ContratResponseDto getContratById(Long id) {
-        Contrat contrat = contratRepository.findById(id).orElseThrow(() -> new RuntimeException("Contrat non trouvé"));
-        return toDto(contrat);
-    }
 
     /**
      * Crée une entité Contrat à partir des données fournies.
@@ -110,7 +95,9 @@ public class ContratService {
      * @param contratRequest Les données de la requête (ContratRequestDto)
      * @return L'objet ContratResponseDto correspondant
      */
-    public ContratResponseDto createContrat(ContratRequestDto contratRequest) {
+    @Override
+    public ResponseDto create(RequestDto request) {
+        ContratRequestDto contratRequest = (ContratRequestDto) request;
         Employe employe = employeRepository.findById(contratRequest.getEmployeId()).orElseThrow(() -> new RuntimeException("Employe non trouvé"));
         StatutContrat statutContrat = statutContratRepository.findById(contratRequest.getStatutContratId()).orElseThrow(() -> new RuntimeException("StatutContrat non trouvé"));
         Contrat contrat = toEntity(contratRequest, employe, statutContrat);
@@ -125,7 +112,9 @@ public class ContratService {
      * @return L'objet ContratResponseDto correspondant
      * @throws RuntimeException Si l'entité Contrat n'existe pas
      */
-    public ContratResponseDto updateContratById(Long id, ContratRequestDto contratRequest) {
+    @Override
+    public ResponseDto update(Long id, RequestDto request) {
+        ContratRequestDto contratRequest = (ContratRequestDto) request;
         Employe employe = employeRepository.findById(contratRequest.getEmployeId()).orElseThrow(() -> new RuntimeException("Employe non trouvé"));
         StatutContrat statutContrat = statutContratRepository.findById(contratRequest.getStatutContratId()).orElseThrow(() -> new RuntimeException("StatutContrat non trouvé"));
         Contrat contrat = contratRepository.findById(id).orElseThrow(() -> new RuntimeException("Contrat non trouvé"));
@@ -141,16 +130,4 @@ public class ContratService {
         return toDto(contratRepository.save(contrat));
     }
 
-    /**
-     * Supprime l'entité Contrat par son identifiant.
-     *
-     * @param id L'identifiant de l'entité Contrat recherchée
-     * @return L'objet ContratResponseDto correspondant
-     * @throws RuntimeException Si l'entité Contrat n'existe pas
-     */
-    public ContratResponseDto deleteContratById(Long id) {
-        Contrat contrat = contratRepository.findById(id).orElseThrow(() -> new RuntimeException("Contrat non trouvé"));
-        contratRepository.deleteById(id);
-        return toDto(contrat);
-    }
 }

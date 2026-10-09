@@ -5,7 +5,7 @@ import java.time.LocalDate;
 /**
  * DTO de requête pour Employe.
  */
-public class EmployeRequestDto {
+public class EmployeRequestDto implements RequestDto {
     private Long id;
     private String nom;
     private String prenom;

@@ -6,7 +6,7 @@ import java.time.LocalDate;
 /**
  * DTO de réponse pour Bulletin.
  */
-public class BulletinResponseDto {
+public class BulletinResponseDto implements ResponseDto {
     private Long id;
     private String periodeMois;
     private LocalDate dateEmission;

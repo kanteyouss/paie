@@ -5,7 +5,7 @@ import java.time.LocalDate;
 /**
  * DTO de réponse pour Employe.
  */
-public class EmployeResponseDto {
+public class EmployeResponseDto implements ResponseDto {
     private Long id;
     private String nom;
     private String prenom;

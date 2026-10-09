@@ -34,7 +34,7 @@ public class CongeService {
         dto.setPeriode(conge.getPeriode());
         dto.setSoldeJours(conge.getSoldeJours());
         if (conge.getContrat() != null) {
-            dto.setContrat(contratService.toDto(conge.getContrat()));
+            dto.setContrat((ContratResponseDto) contratService.toDto(conge.getContrat()));
         }
         return dto;
     }
